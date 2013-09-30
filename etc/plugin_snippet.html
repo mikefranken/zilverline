@@ -1,0 +1,58 @@
+<script type="text/javascript">
+<!--
+  function addEngine(name, ext, cat)
+  {
+    if ((typeof window.sidebar == "object") && (typeof
+    window.sidebar.addSearchEngine == "function"))
+    {
+      window.sidebar.addSearchEngine(
+        "http://www.zilverline.org/zilverlineweb/space/plugins/firefox/" + name + ".src",
+        "http://www.zilverline.org/zilverlineweb/space/plugins/firefox/" + name + "." + ext,
+        name,
+        cat);
+      return true;
+    }
+    else
+    {
+      alert("Sorry, but your browser does not support search plugins.");
+      return false;
+    }
+  }
+// -->
+</script>
+
+        <div class="document">
+          <div id="content">
+            <div>
+              <h1>Adding Zilverline Search Plugin to Your Browser</h1>
+
+              <p/>
+              Zilverline Search Plugin works with the Mozilla family of browsers.
+              By adding the Zilverline Search Plugin, you will be able to search your bookmarks from your browser, as shown in this
+              <a href="javascript:void(open('images/Firefox-search-plugin.png','Zilverline Search Plugin','left=0,top=0,height=330,width=430,location=no,scrollbars=yes,toolbar=no,resizable=yes'));">screenshot</a>. <img width="16" height="16" src="images/icon-Mozilla-16x16.png"/>
+              <p/>
+              <h4>Installing</h4>
+              <p/>
+              <a title="Install Zilverline Search Plugin"
+                 onclick="addEngine('zilverline','gif','Web');"
+                 href="#">Install</a>
+
+              the plugin with a single click.  No computer or
+              browser restart necessary.
+              <p/>
+              <b>Hint</b>: once you have installed the plugin, you can use Ctrl-K (UNIX and
+              Windows) or Command-K (OS X) to quickly jump to the
+              plugin search field.
+              <p/>
+              <h4>Uninstalling</h4>
+              <ol>
+                <li>Go to the installation directory of your browser.</li>
+                <li>Locate the sub-directory called <code>searchplugins</code>.</li>
+
+                <li>Delete both <code>zilverline.src</code> and <code>zilverline.gif</code> files.</li>
+                <li>Restart your browser and the Zilverline Search Plugin will disappear.</li>
+              </ol>
+            </div>
+          </div>
+
+        </div>

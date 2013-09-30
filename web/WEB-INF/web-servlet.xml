@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<!--
+  - Web Application context definition for "zilverline" DispatcherServlet.
+  -->
+
+<beans>
+	<!--
+	  - You can change the theme by changing the value to google, ns, none, or ilse.
+	  -->
+	<bean id="themeResolver" class="org.springframework.web.servlet.theme.FixedThemeResolver">
+       <property name="defaultThemeName"><value>ns</value></property>
+    </bean>
+
+	<!-- set this to fix your locale, otherwise client browser locale will be used 
+	<bean id="localeResolver" class="org.springframework.web.servlet.i18n.FixedLocaleResolver">
+	   <property name="defaultLocale"><value>en</value></property>
+	</bean> 
+	-->
+
+   	<!-- ======================= DON'T CHANGE ANYTHING BELOW THIS LINE ================ -->
+   	<!-- ========================= UNLESS YOU KNOW WHAT YOU'RE DOING ================== -->
+
+   	<!-- ========================= GENERAL SPRING DEFINITIONS ========================= -->
+
+ 	<!--
+	  - Resources bundle stored in messages
+	  -->
+    <bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+        <property name="basename"><value>messages</value></property>
+    </bean>
+
+    <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="viewClass"><value>org.springframework.web.servlet.view.JstlView</value></property>
+        <property name="prefix"><value>/WEB-INF/jsp/</value></property>
+        <property name="suffix"><value>.jsp</value></property>
+    </bean>
+
+	<bean id="exceptionHandler" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+		<property name="exceptionMappings">
+			<value>
+				java.lang.Exception=error
+			</value>
+		</property>
+	</bean>
+
+ 	<!--
+	  - These are simple non-form urls that need to be populated in the appropriate handler of the various Controllers
+	  -->
+    <bean id="urlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+        <property name="mappings">
+            <props>
+                <prop key="/addCollection.htm">addCollectionForm</prop>
+                <prop key="/addIMAPCollection.htm">addIMAPCollectionController</prop>
+                <prop key="/handlers.htm">handlersController</prop>
+                <prop key="/extractorMappings.htm">extractorMappingsController</prop>
+                <prop key="/collections.htm">zilverController</prop>
+                <prop key="/collectiondetails.htm">editCollectionForm</prop>
+                <prop key="/searchDefaults.htm">searchDefaultsController</prop>
+                <prop key="/indexDefaults.htm">indexDefaultsController</prop>
+				<prop key="/errors.htm">zilverController</prop>
+                <prop key="/createindex.htm">indexController</prop>
+                 <prop key="/search.htm">searchController</prop>
+                <prop key="/getfromcache.htm">cacheController</prop>
+                <prop key="/flushCache.htm">zilverController</prop>
+				<prop key="/upload.htm">uploadForm</prop>
+				<prop key="/admin/log4j.htm">zilverController</prop>
+            </props>
+        </property>
+    </bean>
+ 
+   	<!-- ========================= CONTROLLER DEFINITIONS ========================= -->
+
+ 	<!--
+	  - This bean is a MultiActionController that manages general View rendering.
+	  -->
+ 	<bean id="zilverController" class="org.zilverline.web.ZilverController">
+		<property name="methodNameResolver"><ref local="zilverControllerMethodNameResolver"/></property>
+        <property name="collectionManager">
+            <ref bean="collectionMan"/>
+        </property>
+    </bean>
+
+	<!--
+	  - This bean is a MethodNameResolver definition for a MultiActionController.
+	  - It maps URLs to methods for the "zilverController" bean.
+	  -->
+  	<bean id="zilverControllerMethodNameResolver" class="org.springframework.web.servlet.mvc.multiaction.PropertiesMethodNameResolver">
+    	<property name="mappings">
+			<props>
+				<prop key="/collections.htm">collectionsHandler</prop>
+				<prop key="/errors.htm">errorsHandler</prop>
+				<prop key="/flushCache.htm">flushCacheHandler</prop>
+				<prop key="/admin/log4j.htm">log4JHandler</prop>
+			</props>
+    	</property>
+  	</bean>
+
+
+    <bean id="indexController" class="org.zilverline.web.IndexController">
+        <property name="commandClass"><value>org.zilverline.web.CollectionForm</value></property>
+        <property name="formView"><value>collections</value></property>
+		<property name="cancelView"><value>redirect:search.htm</value></property>
+        <property name="successView"><value>collections</value></property>
+        <property name="collectionManager">
+            <ref bean="collectionMan"/>
+        </property>
+        <property name="indexService">
+            <ref bean="indexService"/>
+        </property>
+    </bean>
+
+	<!--
+	  - This bean is a SimpleFormController that manages the addCollection use case.
+	  - It uses the "collectionValidator" and "colMan" beans.
+	  -->
+	<bean id="addCollectionForm" class="org.zilverline.web.AddCollectionController">
+       <property name="commandClass"><value>org.zilverline.core.FileSystemCollection</value></property>
+		<property name="formView"><value>collectionForm</value></property>
+		<property name="successView"><value>redirect:collections.htm</value></property>
+		<property name="cancelView"><value>redirect:collections.htm</value></property>
+		<property name="validator"><ref local="collectionValidator"/></property>
+        <property name="collectionManager">
+            <ref bean="collectionMan"/>
+        </property>
+	</bean>
+	<!--
+	  - This bean is a SimpleFormController that manages the addCollection use case.
+	  - It uses the "collectionValidator" and "colMan" beans.
+	  -->
+	<bean id="editCollectionForm" class="org.zilverline.web.EditCollectionController">
+       <property name="commandClass"><value>org.zilverline.core.FileSystemCollection</value></property>
+		<property name="formView"><value>collectionForm</value></property>
+		<property name="successView"><value>redirect:collections.htm</value></property>
+		<property name="validator"><ref local="collectionValidator"/></property>
+		<property name="cancelView"><value>redirect:collections.htm</value></property>
+        <property name="collectionManager">
+            <ref bean="collectionMan"/>
+        </property>
+	</bean>
+
+	<bean id="addIMAPCollectionController" class="org.zilverline.web.AddIMAPCollectionController">
+       <property name="commandClass"><value>org.zilverline.core.IMAPCollection</value></property>
+		<property name="formView"><value>collectionIMAPForm</value></property>
+		<property name="successView"><value>redirect:collections.htm</value></property>
+		<!-- property name="validator"><ref local="collectionValidator"/></property-->
+        <property name="collectionManager">
+            <ref bean="collectionMan"/>
+        </property>
+	</bean>
+
+	<!--
+	  - This bean is an implementation of the Validator interface.
+	  - It is used by the "addOwnerForm" and "editOwnerForm" beans.
+	  -->
+	<bean id="collectionValidator" class="org.zilverline.web.CollectionValidator"/>
+
+	<!--
+	  - This bean is a SimpleFormController that manages the search use case.
+	  - On validation in case of errors the command is put in the model as bean with beanname,
+	  - and posted to the form itself (formView).
+	  -
+	  - On succes the successView is shown
+	  -->
+	<bean id="searchController" class="org.zilverline.web.SearchController">
+        <property name="commandClass"><value>org.zilverline.web.SearchForm</value></property>
+		<property name="validator"><ref local="searchFormValidator"/></property>
+		<property name="formView"><value>search</value></property>
+		<property name="successView"><value>search</value></property>
+        <property name="collectionManager">
+            <ref bean="collectionMan"/>
+        </property>
+        <property name="service">
+            <ref bean="searchService"/>
+        </property>
+	</bean>
+
+	<!-- Validator for searchForm, implementing Spring's Validator interface. -->
+	<bean id="searchFormValidator" class="org.zilverline.web.SearchFormValidator"/>
+
+	<!--
+	  - This bean is a SimpleFormController that manages the search use case.
+	  - On validation in case of errors the command is put in the model as bean with beanname,
+	  - and posted to the form itself (formView).
+	  -
+	  - On succes the successView is shown
+	  -->
+	<bean id="searchDefaultsController" class="org.zilverline.web.SearchDefaultsController">
+        <property name="commandClass"><value>org.zilverline.service.SearchService</value></property>
+		<!-- property name="validator"><ref local="searchServiceValidator"/></property-->
+		<property name="formView"><value>searchDefaults</value></property>
+		<property name="successView"><value>redirect:searchDefaults.htm</value></property>
+        <property name="service">
+            <ref bean="searchService"/>
+        </property>
+	</bean>
+
+	<!-- Validator for searchDefaultsController, implementing Spring's Validator interface. -->
+	<bean id="searchServiceValidator" class="org.zilverline.web.SearchServiceValidator"/>
+
+	<bean id="indexDefaultsController" class="org.zilverline.web.IndexDefaultsController">
+        <property name="commandClass"><value>org.zilverline.service.CollectionManager</value></property>
+		<property name="formView"><value>indexDefaults</value></property>
+		<property name="successView"><value>redirect:indexDefaults.htm</value></property>
+		<property name="validator"><ref local="indexDefaultsValidator"/></property>
+        <property name="collectionManager">
+            <ref bean="collectionMan"/>
+        </property>
+	</bean>
+
+	<bean id="indexDefaultsValidator" class="org.zilverline.web.IndexDefaultsValidator"/>
+
+	<bean id="extractorMappingsController" class="org.zilverline.web.ExtractorMappingsController">
+        <property name="commandClass"><value>org.zilverline.service.CollectionManager</value></property>
+		<property name="validator"><ref local="collectionManagerValidator"/></property>
+		<property name="formView"><value>extractorMappings</value></property>
+		<property name="successView"><value>redirect:extractorMappings.htm</value></property>
+        <property name="collectionManager">
+            <ref bean="collectionMan"/>
+        </property>
+ 	</bean>
+
+	<!-- Validator for searchForm, implementing Spring's Validator interface. -->
+	<bean id="collectionManagerValidator" class="org.zilverline.web.CollectionManagerValidator"/>
+
+	<bean id="handlersController" class="org.zilverline.web.HandlersController">
+        <property name="commandClass"><value>org.zilverline.core.Handler</value></property>
+		<!-- property name="validator"><ref local="archiveHandlerValidator"/></property-->
+		<property name="formView"><value>handlers</value></property>
+		<property name="successView"><value>redirect:handlers.htm</value></property>
+        <property name="collectionManager">
+            <ref bean="collectionMan"/>
+        </property>
+ 	</bean>
+
+	<!-- Validator for searchForm, implementing Spring's Validator interface. -->
+	<bean id="handlerValidator" class="org.zilverline.web.HandlerValidator"/>
+
+    <bean id="cacheController" class="org.zilverline.web.CacheController">
+        <property name="commandClass"><value>org.zilverline.web.DocumentFromCacheForm</value></property>
+        <property name="formView"><value>search</value></property>
+        <property name="successView"><value>cache</value></property>
+        <property name="collectionManager">
+            <ref bean="collectionMan"/>
+        </property>
+        <property name="indexService">
+            <ref bean="indexService"/>
+        </property>
+    </bean>
+
+  <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+    <!-- one of the properties available; the maximum file size in bytes = 50MB-->
+    <property name="maxUploadSize">
+        <value>52428800</value>
+    </property>
+  </bean>
+
+	<bean id="uploadForm" class="org.zilverline.web.UploadForm">
+        <property name="commandClass"><value>org.zilverline.web.UploadCommand</value></property>
+        <property name="formView"><value>upload</value></property>
+        <property name="collectionManager">
+            <ref bean="collectionMan"/>
+        </property>
+		<property name="successView"><value>upload</value></property>
+		<property name="cancelView"><value>redirect:search.htm</value></property>
+		<property name="validator"><ref bean="uploadValidator"/></property>
+	</bean>
+
+	<bean id="uploadValidator" class="org.zilverline.web.UploadValidator">
+        <property name="collectionManager">
+            <ref bean="collectionMan"/>
+        </property>
+	</bean>
+
+
+</beans>

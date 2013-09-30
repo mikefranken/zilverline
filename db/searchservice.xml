@@ -1,0 +1,24 @@
+<searchService>
+  <maxResults>20</maxResults>
+  <query>java lang reflect</query>
+  <factors>
+    <factors>
+      <entry>
+        <string>contents</string>
+        <float>1.0</float>
+      </entry>
+      <entry>
+        <string>summary</string>
+        <float>2.0</float>
+      </entry>
+      <entry>
+        <string>title</string>
+        <float>3.0</float>
+      </entry>
+      <entry>
+        <string>name</string>
+        <float>4.0</float>
+      </entry>
+    </factors>
+  </factors>
+</searchService>

@@ -1,0 +1,1 @@
+Dit is een test in een TEXT document in een sub directory.

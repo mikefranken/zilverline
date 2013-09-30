@@ -1,0 +1,10 @@
+#Organize Import Order
+#Thu Aug 25 13:35:43 CEST 2005
+6=org.apache.lucene
+5=org.springframework
+4=org.apache
+3=com
+2=org
+1=javax
+0=java
+7=org.zilverline

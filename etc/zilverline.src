@@ -1,0 +1,38 @@
+# Mozilla/Firefox Search Plugin for Zilverline
+# by Michael Franken
+#  
+# Created: 12 November 2004
+# Updated: 12 November 2004
+#
+# Edit the action and searchfrom part (here http://localhost:8080/zilverline) to match your server
+
+<search
+    version = "1.0"
+	name = "Zilverline"
+	method = "GET"
+	description="Search Zilverline"
+	action = "http://localhost:8080/zilverline/search.htm"
+	searchform = "http://localhost:8080/zilverline/search.htm"
+>
+
+<input name="maxResults" value="10">
+<input name="Search" value="Search">
+<input name="startAt" value="1">
+
+<interpret
+    browserResultType = "result"
+
+    resultListStart = "<!-- RESULT LIST START -->"
+    resultListEnd = "<!-- RESULT LIST END -->"
+
+    resultItemStart = "<!-- RESULT ITEM START -->"
+    resultItemEnd = "<!-- RESULT ITEM END -->"
+>
+	
+</search>
+
+<browser
+	update="http://www.zilverline.org/zilverlineweb/space/plugins/firefox/zilverline.src"
+	updateIcon="http://www.ilverline.org/zilverlineweb/space/plugins/firefox/zilverline.gif"
+	updateCheckDays="1"
+>

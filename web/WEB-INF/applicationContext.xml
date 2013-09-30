@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<!--
+	- Application context definition for "zilverline" Business Logic.
+-->
+
+<beans>
+	<!-- bean name="tracingAroundAdvice" class="org.zilverline.aop.TracingAroundAdvice" />
+
+	<bean class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+		<property name="interceptorNames" value="tracingAroundAdvice" />
+		<property name="beanNames" value="*Collection" />
+		<property name="proxyTargetClass" value="true" />
+	</bean-->
+
+	<!-- property placeholder post-processor -->
+	<bean id="placeholderConfig" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+	  <property name="location" value="classpath:dao.properties"/>
+	  <!-- property name="searchSystemEnvironment" value="true"/-->
+	  <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE"/>
+	</bean>
+	
+	<bean id="abstractDao" class="org.zilverline.dao.xstream.AbstractXStreamDAOImpl" abstract="true">
+		<property name="baseDir"><value>${test.home}</value></property>
+	</bean>
+
+	<bean id="collectionDao"
+		class="org.zilverline.dao.xstream.CollectionManagerXStreamDAOImpl" parent="abstractDao">
+		<!-- property name="filename"><value>collections.xml</value></property-->
+	</bean>
+
+	<bean id="searchServiceDao"
+		class="org.zilverline.dao.xstream.SearchServiceXStreamDAOImpl"
+		parent="abstractDao">
+	</bean>
+
+	<bean id="indexServiceDao"
+		class="org.zilverline.dao.xstream.IndexServiceXStreamDAOImpl"
+		parent="abstractDao">
+	</bean>
+
+	<!--
+		- Initialize CollectionManager bean. 
+	-->
+	<bean id="collectionMan"
+		class="org.zilverline.service.CollectionManagerImpl"
+		init-method="init">
+		<property name="dao">
+			<ref local="collectionDao" />
+		</property>
+	</bean>
+
+	<!--
+		- Initialize SearchService bean. 
+	-->
+	<bean id="searchService"
+		class="org.zilverline.service.SearchServiceImpl" init-method="init">
+		<property name="collectionManager">
+			<ref bean="collectionMan" />
+		</property>
+		<property name="dao">
+			<ref local="searchServiceDao" />
+		</property>
+	</bean>
+
+	<!--
+		- Initialize IndexService bean. 
+	-->
+	<bean id="indexService"
+		class="org.zilverline.service.IndexServiceImpl" init-method="init">
+		<property name="collectionManager">
+			<ref bean="collectionMan" />
+		</property>
+		<property name="dao">
+			<ref local="indexServiceDao" />
+		</property>
+	</bean>
+
+
+
+</beans>

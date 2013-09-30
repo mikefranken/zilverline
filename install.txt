@@ -1,0 +1,21 @@
+Zilverline Search engine
+
+Installation and build guide
+
+In order to build Zilverline, you will have to use Maven (http://maven.apache.org/). 
+
+Ant support is deprecated, although the build files are still available, 
+they don't work because the necessary libraries need to be downloaded. Maven does this for you.
+
+So, make sure you install maven, or manually download the proper libs (as specified in project.xml dependencies).
+
+After properly installing maven (1.0.2), you just run:
+
+maven test - (optional) to test run, and download proper libraries (you need to have Internet Access)
+maven war - to create the war file
+maven site - create test reports
+maven tomcat:reload - to reload zilverline in tomcat (make sure to check build.properties for tomcat settings)
+
+Happy building and searching.
+
+Michael Franken, info@zilverline.org

@@ -1,0 +1,238 @@
+/* Applies to overall page */
+/* Light tone = #DCDCDC */
+/* Dark tone = #697BA6 */
+/* Font color = black */
+
+BODY {
+	background-color: #DCDCDC;
+	font-family: arial, helvetica, sans-serif;
+	color: black;
+    font-size: 10pt;
+}
+
+p {
+    width: 90%;
+	margin-left: 4%;
+	padding: 5;
+	color: black;
+} 
+
+/* Headers and titles */
+#header {
+    width: 100%;
+	background-color: white;
+	font: bold;
+	border: outset #697BA6 2px;
+	border-bottom: thick solid #697BA6;
+	padding-left: 10pt;
+    margin-bottom: 10pt;
+}
+
+#header a {
+	color: black;
+	text-decoration: none;
+    font-size: 110%;
+    padding: 10pt;
+}
+	
+#header a:hover {
+	text-decoration: underline;
+}
+
+.zilverpanel {
+    width: 90%;
+	margin-left: 4%;
+	padding: 5;
+	color: black;
+	font-size: 100%;
+    border: outset #697BA6 2px;
+} 
+
+.zilverpanel:first-line {
+	color: black;
+	font-weight: bold;
+	font-size: 120%;
+} 
+
+.zilverpanel table {
+	width: 100%;
+	border: 0px;
+	font-size: 8pt;
+	color: black;
+	font-weight: bold;
+} 
+
+.zilverpanel TH{
+	color: black;
+	background-color: #697BA6;
+	border-bottom: thin solid white;
+	border-right: thin solid white;
+	padding: 2px;
+}
+
+.zilverpanel TD {
+	color: black;
+	background-color: #697BA6;
+	border-bottom: thin solid white;
+	border-right: thin solid white;
+	font-size: small;
+	padding-left: 3pt;
+	padding-right: 3pt;
+	padding: 1pt;
+}
+
+.zilverpanel .small {
+	font-size: 8pt;
+	font-weight: bold;
+}
+
+.zilverpanel .italic {
+	font-size: 8pt;
+	color: #DCDCDC;
+	font-style: italic;
+}
+
+.zilverpanel .highlight {
+	background: yellow;
+	font-weight: bold;
+}
+.zilverpanel ul {
+	font-weight: bold;
+	font-size: 100%;
+   	text-align: right;
+	margin-left: 0;
+	padding-left: 0;
+	padding-right: 10;
+	display: inline;
+} 
+
+.zilverpanel ul li {
+	margin-left: 2px;
+	margin-right: 10px;
+	list-style: none;
+	display: inline;
+}
+	
+.zilverpanel ul li a {
+	text-decoration: none;
+}
+	
+.zilverpanel ul li  a:hover {
+	text-decoration: underline;
+}
+
+.zilverpanel #current {
+	padding: 2pt;
+	padding-left: 3pt;
+	padding-right: 3pt;
+	color: black;
+	border-right: thin solid #036E85;
+	background-color: #697BA6;
+}
+
+.zilverpanel #current a {
+	color: black;
+}
+
+.error {
+	font-size: 12pt;
+	color: red;
+	font-style: italic;
+	font-weight: bold;
+}
+
+#tabs ul {
+	position: absolute;
+   	right: 5%;
+   	top: 10px;
+   	text-align: right;
+	margin-left: 0;
+	padding-left: 0;
+	padding-right: 10;
+	display: inline;
+} 
+
+#tabs ul li {
+	font-size: 11pt;
+	font: bold;
+	margin-left: 0;
+	padding: 2px 15px 5px;
+	list-style: none;
+	display: inline;
+}
+	
+#tabs ul li a {
+	color: black;
+	text-decoration: none;
+}
+	
+#cols {
+	font-size: 10pt;
+	font-weight: bold;
+} 
+
+#cols ul {
+	font-weight: normal;
+	margin-left: 0;
+	padding-left: 0;
+	padding-right: 10;
+	display: inline;
+} 
+
+#cols ul li {
+	font: bold;
+	margin-left: 0;
+	margin-bottom: 0;
+	padding: 2px 5px 5px;
+	list-style: none;
+	display: inline;
+}
+	
+	
+
+/* Hyperlinks */
+A {
+	text-decoration: underline;
+	color: black;
+}
+
+A:VISITED {
+	text-decoration: underline;
+}
+
+A:HOVER {
+	text-decoration: underline;
+}
+
+A:ACTIVE {
+	text-decoration: underline;
+}
+
+a.pager {
+	text-decoration: underline;
+}
+
+a.pager:hover {
+	text-decoration: underline;
+}
+
+a.pager:visited {
+	text-decoration: underline;
+}
+
+a.doc {
+	color: #014493;
+	text-decoration: underline;
+}
+
+a.doc:hover {
+	text-decoration: underline;
+}
+
+
+INPUT , TEXTAREA {
+	border-width: 2pt;
+	border-color: #697BA6;
+	background-color: white;
+}
+

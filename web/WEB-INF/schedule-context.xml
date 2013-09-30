@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<!--
+  - Application context definition for "zilverline" Business Logic.
+  -->
+
+<beans>
+ 	<!--
+	  - Quartz scheduling. 
+	  -->
+	<bean id="methodInvokingJobDetail" 
+	  class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+	    <property name="targetObject"><ref bean="indexService"/></property>
+	    <property name="targetMethod"><value>index</value></property>
+	</bean>	
+
+	<bean id="cronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	  <property name="jobDetail">
+	    <ref bean="methodInvokingJobDetail"/>
+	  </property>
+	  <property name="cronExpression">
+	    <!-- run every night at 3:14 -->
+	    <value>0 14 3 * * ?</value>
+	  </property>
+	</bean>
+
+	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+	  <property name="triggers">
+	    <list>
+	      <ref local="cronTrigger"/>
+	    </list>
+	  </property>
+	</bean>
+</beans>

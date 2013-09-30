@@ -1,0 +1,136 @@
+<?xml version="1.0"?>
+
+<!--
+ * ========================================================================
+ * 
+ * Copyright 2005 Wehkamp.
+ *
+ * ========================================================================
+-->
+
+<jsl:stylesheet
+  select="$doc"
+  xmlns:j="jelly:core"
+  xmlns:jsl="jelly:jsl"
+  xmlns:x="jelly:xml"
+  xmlns:u="jelly:util"
+  xmlns="dummy" trim="false">
+
+  <jsl:template match="dashboard">
+    <document>
+      <properties>
+        <title>Dashboard Report</title>
+      </properties>
+      <body>
+        <section name="Dashboard report">
+          <p>
+            <a href="${maven.dashboard.report.legend.xdoc}.html" target="Legend">Column 
+            legends</a>
+          </p>
+          <table>
+            <tr>
+              <th>Project</th>
+              <jsl:forEach var="projectName" select="project/@name">
+                <th>
+                  <j:expr value="${projectName.text}"/>
+                </th>
+              </jsl:forEach>
+            </tr>
+            <jsl:forEach var="aggregatorName" select="project[1]/aggregator/@name">
+              <tr>
+                <td>
+                  <j:set var="aggLabel" value="maven.dashboard.aggregator.${aggregatorName.value}.label"/>
+                  <j:expr value="${context.getVariable(aggLabel)}"/>
+                </td>
+                <x:forEach var="projectName" select="/dashboard/project/@name">
+                  <jsl:applyTemplates select="/dashboard/project[@name='${projectName.text}']/aggregator[@name='${aggregatorName.text}']" />
+                </x:forEach>
+              </tr>
+            </jsl:forEach>
+          </table>
+        </section>
+      </body>
+    </document>
+  </jsl:template>
+
+  <jsl:template match="aggregator">
+    <td>
+      <x:set var="str" select="string()"/>
+      <!-- if aggregator output is a not percentage value, just print the value -->
+      <!-- could print a different background color based on a configurable -->
+      <!-- range, see MPDASHBOARD-2 in Jira issues for this plugin -->
+      <j:if test="${str.trim().endsWith('%') == 'false'}">
+        <x:expr select="text()"/> 
+      </j:if>
+
+      <!-- if aggregator output is a percentage value, print a progress bar -->
+      <j:if test="${str.trim().endsWith('%') == 'true'}">
+
+        <!-- convert percentage string to two complementary numbers -->
+        <u:replace var="percentStr" value="${str}" oldChar="%" newChar=" " trim="true"/>
+        <j:set var="percent"  value="${0 + percentStr.trim()}"/>
+        <j:set var="cpercent" value="${100 - percent}"/>
+
+        <j:whitespace trim="true">
+          <table>
+            <j:if test="${context.getVariable('maven.dashboard.report.bar.displayLabel') == 'true'}">
+              <tr>
+                <x:element name="td">
+                  <x:attribute name="colspan">2</x:attribute>
+                  <j:expr value="${percent}%"/>
+                </x:element>
+              </tr>
+            </j:if>
+            <tr>
+              <j:if test="${percent != '0'}">
+                <x:element name="td">
+                  <x:attribute name="bgcolor">
+                    <j:expr value="${maven.dashboard.report.bar.left}"/>
+                  </x:attribute>
+                  <x:element name="img">
+                    <x:attribute name="hspace">0</x:attribute>
+                    <x:attribute name="vspace">0</x:attribute>
+                    <x:attribute name="src">
+                      <j:expr value="${maven.dashboard.report.bar.image}"/>
+                    </x:attribute>
+                    <x:attribute name="height">
+                      <j:expr value="${maven.dashboard.report.bar.height}"/>
+                    </x:attribute>
+                    <x:attribute name="border">        
+                      <j:expr value="${maven.dashboard.report.bar.border}"/>
+                    </x:attribute>
+                    <x:attribute name="width">${percent}</x:attribute>
+                    <x:attribute name="alt">${percent}%</x:attribute>
+                  </x:element>
+                </x:element>
+              </j:if>
+              <j:if test="${cpercent != '0'}">
+                <x:element name="td">
+                  <x:attribute name="bgcolor">
+                    <j:expr value="${maven.dashboard.report.bar.right}"/>
+                  </x:attribute>
+                  <x:element name="img">
+                    <x:attribute name="hspace">0</x:attribute>
+                    <x:attribute name="vspace">0</x:attribute>
+                    <x:attribute name="src">
+                      <j:expr value="${maven.dashboard.report.bar.image}"/>
+                    </x:attribute>
+                    <x:attribute name="height">
+                      <j:expr value="${maven.dashboard.report.bar.height}"/>
+                    </x:attribute>
+                    <x:attribute name="border">        
+                      <j:expr value="${maven.dashboard.report.bar.border}"/>
+                    </x:attribute>
+                    <x:attribute name="width">${cpercent}</x:attribute>
+                    <x:attribute name="alt">${cpercent}%</x:attribute>
+                  </x:element>
+                </x:element>
+              </j:if>
+            </tr>
+          </table>
+        </j:whitespace>
+      </j:if>
+    </td>
+  </jsl:template>
+
+</jsl:stylesheet>

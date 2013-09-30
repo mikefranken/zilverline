@@ -1,0 +1,468 @@
+<?xml version="1.0"?>
+
+<project name="zilverline" basedir="." default="usage">
+    <property file="build.properties"/>
+
+    <property name="name" value="zilverline"/>
+    <property name="src.dir" value="src"/>
+    <property name="tst.dir" value="test"/>
+    <property name="lib.dir" value="lib"/>
+    <property name="web.dir" value="web"/>
+    <property name="build.dir" value="build"/>
+    <property name="build.test.dir" value="${build.dir}/test-classes"/>
+    <property name="build.web.dir" value="${web.dir}/WEB-INF/classes"/>
+    <property name="build.instrumented.dir" value="${build.dir}/instrumented-classes"/>
+    <property name="dist.dir" value="dist"/>
+    <property name="docs.dir" value="docs"/>
+    <property name="javadocs.dir" value="${docs.dir}/api"/>
+    <property name="reports.dir" value="${docs.dir}/reports"/>
+    <property name="checkstyle.dir" value="${reports.dir}/checkstyle"/>
+    <property name="jdepend.report.dir" value="${reports.dir}/jdepend"/>
+
+    <path id="master-classpath">
+        <fileset dir="${lib.dir}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${tomcat.home}/common/lib">
+            <include name="servlet.jar"/>
+        </fileset>
+    </path>
+
+  <!-- ==================================================================== -->
+  <!-- Usage                                                                -->
+  <!-- ==================================================================== -->
+    <target name="usage">
+        <echo message=""/>
+        <echo message="${name} build file"/>
+        <echo message="-----------------------------------"/>
+        <echo message=""/>
+        <echo message="Available targets are:"/>
+        <echo message=""/>
+        <echo message="clean     --> Remove the compiled classes and war"/>
+        <echo message=""/>
+        <echo message="compile   --> Compiles the source"/>
+        <echo message="deploy    --> Deploy application as directory"/>
+        <echo message="undeploy  --> remove deployed application as directory"/>
+        <echo message="war       --> Create a WAR file"/>
+        <echo message="deploywar --> Deploy application as a WAR file"/>
+        <echo message=""/>
+        <echo message="format    --> Format all sources according to jalopy"/>
+        <echo message="checkstyle--> Check coding standard with CheckStyle"/>
+        <echo message="test      --> Runs UNIT tests"/>
+        <echo message="generate-testreport      --> Generates UNIT test report"/>
+        <echo message="coverage  --> Generates UNIT test coverage report"/>
+        <echo message="javadoc   --> Generate Javadoc for application"/>
+        <echo message="reports   --> Generates all reports"/>
+        <echo message=""/>
+        <echo message="install   --> Install application in Tomcat"/>
+        <echo message="reload    --> Reload application in Tomcat"/>
+        <echo message="start     --> Start Tomcat application"/>
+        <echo message="stop      --> Stop Tomcat application"/>
+        <echo message="list      --> List Tomcat applications"/>
+        <echo message=""/>
+    </target>
+
+  <!-- ==================================================================== -->
+  <!-- Application build tasks                                              -->
+  <!-- ==================================================================== -->
+	<!-- ********************************************************************* -->
+	<!-- Version the BuildInformation.java file from BuildInformation.template -->
+	<!-- ********************************************************************* -->
+	<target name="java-versionclass">
+		<copy file="${src.dir}/org/zilverline/util/About.template" tofile="${src.dir}/org/zilverline/util/About.java" overwrite="true"/>
+		<tstamp>
+		    <format property="BUILD_DATE" pattern="dd-MM-yyyy HH:mm:ss" locale="en"/>
+  		</tstamp>		
+		<echo>Setting Build date to: ${BUILD_DATE}</echo>  
+		<replace file="${src.dir}/org/zilverline/util/About.java"
+			token="@BUILD_DATE@"
+			value="${BUILD_DATE}"/>
+		<replace file="${src.dir}/org/zilverline/util/About.java"
+			token="@AUTHOR@"
+			value="${author}"/>
+		<replace file="${src.dir}/org/zilverline/util/About.java"
+			token="@COPYRIGHT@"
+			value="${copyright}"/>
+		<replace file="${src.dir}/org/zilverline/util/About.java"
+			token="@PRODUCTNAME@"
+			value="${productName}"/>
+		<replace file="${src.dir}/org/zilverline/util/About.java"
+			token="@VERSION@"
+			value="${version}"/>
+	</target>
+
+    <target name="compile"  depends="java-versionclass" description="Compile main source tree java files">
+        <mkdir dir="${build.web.dir}"/>
+        <javac destdir="${build.web.dir}" target="1.4" debug="true"
+               deprecation="false" optimize="false" failonerror="true">
+            <src path="${src.dir}"/>
+             <classpath refid="master-classpath"/>
+        </javac>
+    </target>
+
+    <!-- create .jar -->
+    <target name="jar" depends="compile">
+        <mkdir dir="${dist.dir}"/>
+            <jar jarfile="${dist.dir}/${name}.jar"
+                    basedir="${build.web.dir}"
+                    includes="org/zilverline/**">
+              <fileset dir="${build.web.dir}">
+                <include name="org/*.properties"/>
+              </fileset>
+            </jar>
+    </target>
+
+	<taskdef name="obfuscate" 
+      classname="com.yworks.yguard.ObfuscatorTask" 
+      classpath="yguard.jar"/>
+
+  	<target name="obfuscate" depends="jar">
+	    <obfuscate>
+    	<inoutpair in="${dist.dir}/${name}.jar" out="${dist.dir}/${name}_obf.jar"/>
+		    <property name="error-checking" value="pedantic"/>
+		    <externalclasses>
+		        <pathelement location="${lib.dir}/spring-core-1.0.2.jar"/>
+		        <pathelement location="${lib.dir}/spring-context-1.0.2.jar"/>
+		        <pathelement location="${lib.dir}/spring-web-1.0.2.jar"/>
+		        <pathelement location="${lib.dir}/spring-webmvc-1.0.2.jar"/>
+		        <pathelement location="${lib.dir}/lucene-1.4-final.jar"/>
+		        <pathelement location="${lib.dir}/lucene-1.4-demos-final.jar"/>
+		        <pathelement location="${tomcat.home}/common/lib/servlet.jar"/>
+		    </externalclasses> 	   
+	    </obfuscate>
+  	</target>
+
+    <target name="buildtest" description="Compile test java files">
+        <mkdir dir="${build.test.dir}"/>
+        <javac destdir="${build.test.dir}" target="1.4" debug="true"
+               deprecation="false" optimize="false" failonerror="true">
+             <src path="${tst.dir}"/>
+            <classpath refid="master-classpath"/>
+            <classpath path="${build.web.dir}"/>
+        </javac>
+    </target>
+
+    <target name="deploy" depends="compile" description="Deploy application">
+        <copy todir="${tomcat.home}/webapps/${name}" preservelastmodified="true">
+            <fileset dir="${web.dir}">
+                <include name="**/*.*"/>
+            </fileset>
+        </copy>
+       <copy todir="${tomcat.home}/webapps/${name}/WEB-INF/lib" preservelastmodified="true">
+            <fileset dir="${lib.dir}">
+                <include name="**/*.jar"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="war" depends="compile" description="Creates a WAR file">
+        <mkdir dir="${dist.dir}"/>
+        <war destfile="${dist.dir}/${name}.war" webxml="${web.dir}/WEB-INF/web.xml">
+            <fileset dir="${web.dir}">
+               	<exclude name="${web.dir}/WEB-INF/web.xml"/>
+                <include name="**/*.*"/>
+            </fileset>
+         </war>
+    </target>
+
+    <target name="deploywar" depends="war" description="Deploy application as a WAR file">
+        <copy todir="${deploy.path}" preservelastmodified="true">
+            <fileset dir="${dist.dir}">
+                <include name="*.war"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="clean" description="Clean output directories">
+        <delete includeEmptyDirs="true" quiet="true">
+            <fileset dir="${build.web.dir}">
+                <include name="**/*.class"/>
+                <exclude name="**/*.properties"/>
+            </fileset>
+            <fileset dir="${dist.dir}"/>
+            <fileset dir="${build.dir}"/>
+            <fileset dir="${javadocs.dir}"/>
+            <fileset dir="${reports.dir}"/>
+ 	    	<fileset dir="${build.instrumented.dir}"/>
+        </delete>
+		<delete file="jcoverage.ser"/>
+    </target>
+
+    <target name="undeploy" depends="stop" description="Un-Deploy application">
+        <delete>
+            <fileset dir="${deploy.path}/${name}">
+                <include name="**/*.*"/>
+            </fileset>
+        </delete>
+    </target>
+    
+  <!-- ==================================================================== -->
+  <!-- Defines the JUNIT test task                                          -->
+  <!-- ==================================================================== -->
+    <target name="test" depends="compile, buildtest" description="Run JUnit Tests">
+		<mkdir dir="${reports.dir}/unittest/xml"/>
+
+        <junit printsummary="no"
+               fork="false"
+               haltonfailure="false"
+               failureproperty="tests.failed"
+               showoutput="no">
+			<classpath>
+                <path location="${build.instrumented.dir}"/>
+                <path location="${build.web.dir}"/>
+                <path location="${build.test.dir}"/>
+                <fileset dir="${lib.dir}">
+                    <include name="*.jar"/>
+                </fileset>
+                <fileset dir="${tomcat.home}/common/lib">
+                    <include name="servlet.jar"/>
+                </fileset>
+            </classpath>
+            <formatter type="xml"/>
+
+            <batchtest todir="${reports.dir}/unittest/xml">
+                <fileset dir="${build.test.dir}">
+                    <include name="**/Test*.*"/>
+                </fileset>
+            </batchtest>
+
+        </junit>
+
+        <fail if="tests.failed">
+        ***********************************************************
+        ***********************************************************
+        ****  One or more tests failed!  Check the output ...  ****
+        ***********************************************************
+        ***********************************************************
+        </fail>
+    </target>
+
+	<!-- Create the HTML test report  -->
+	<!-- Assumption: test have been run seperately -->
+	<target name="generate-testreport" depends="test" description="Generate test report. Run 'test' first!">
+		<junitreport todir="${reports.dir}/unittest/xml">
+			<fileset dir="${reports.dir}/unittest/xml">
+				<include name="TEST-*.xml"/>
+			</fileset>
+
+			<report format="frames" todir="${reports.dir}/unittest"/>
+		</junitreport>
+	</target>
+
+<!-- ==================================================================== -->
+<!-- Checks UNIT test coverage                                            -->
+<!-- ==================================================================== -->
+	<taskdef classpath="jcoverage.jar" resource="tasks.properties"/>
+
+	<target name="instrument" depends="compile" >
+		<mkdir dir="${build.instrumented.dir}"/>
+ 	   <instrument todir="${build.instrumented.dir}">
+	      <!--
+    	    Note that the following line causes instrument to ignore any
+        	source line containing a reference to log4j, for the purposes
+	        of coverage reporting.
+    	  -->
+	      <ignore regex="org.apache.log4j.*"/>
+
+    	  <fileset dir="${build.web.dir}">
+        	<!--
+	          instrument all the application classes, but don't instrument
+    	      the test classes.
+        	-->
+	        <include name="**/*.class"/>
+    	    <exclude name="**/Test*.class"/>
+	      </fileset>
+    	</instrument>
+	</target>
+ 
+
+	<target name="coverage" depends="instrument, test">
+		<mkdir dir="${reports.dir}/coverage"/>
+		<report srcdir="${src.dir}" destdir="${reports.dir}/coverage"/>
+	</target>
+    
+  <!-- ==================================================================== -->
+  <!-- Defines the JavaDoc task                                             -->
+  <!-- ==================================================================== -->
+    <target name="javadoc" description="Generate Zilverline Javadocs.">
+
+		<mkdir dir="${javadocs.dir}"/>
+
+		<javadoc sourcepath="${src.dir}" destdir="${javadocs.dir}" windowtitle="Zilverline Search Engine"
+			defaultexcludes="yes"	author="true" version="true" use="true">
+			<doctitle><![CDATA[<h1>Zilverline Search Engine</h1>]]></doctitle>
+			<bottom><![CDATA[<i>Michael Franken (c) 2004.</i>]]></bottom>
+			<classpath refid="master-classpath"/>
+			<packageset dir="${src.dir}">
+				<include name="org/zilverline/**"/>
+			</packageset>
+            <link href="http://java.sun.com/j2se/1.4.2/docs/api/"/>
+            <link href="http://jakarta.apache.org/lucene/docs/api/" />
+            <link href="http://www.springframework.org/docs/api/" />
+		</javadoc>
+
+	</target>
+    
+  <target name="checkdoc"
+      description="Run SUN docCheck to verify JavaDoc usage">
+      <delete dir = "${reports.dir}/docCheck" />
+      <mkdir  dir = "${reports.dir}/docCheck" />
+      <javadoc
+          docletpath      = "doccheck.jar"
+          doclet          = "com.sun.tools.doclets.doccheck.DocCheck"
+          defaultexcludes = "yes"
+          sourcepath      = "${src.dir}"
+          destdir         = "${reports.dir}/docCheck"
+          packagenames    = "org.zilverline.core, org.zilverline.util, org.zilverline.web"
+          additionalparam = "-classlist
+                             -docletID
+                             -title 'Zilverline Code' 
+                             -skipClass 'test*.Skip*:t*.t*.Skip*' 
+                             -skipPkg 'ig*ore:ignore.*'"
+      />
+  </target>
+
+  <!-- ==================================================================== -->
+  <!-- Defines the Jalopy task                                              -->
+  <!-- ==================================================================== -->
+  <taskdef name="jalopy"
+           classname="de.hunsicker.jalopy.plugin.ant.AntPlugin">
+  </taskdef>
+
+
+  <!-- ==================================================================== -->
+  <!-- Formats all source files                                             -->
+  <!-- ==================================================================== -->
+  <target name="format">
+
+    <jalopy fileformat="unix"
+            classpathref="master-classpath">
+      <fileset dir="${src.dir}">
+        <include name="**/*.java" />
+      </fileset>
+    </jalopy>
+  </target>
+
+  <!-- ==================================================================== -->
+  <!-- Defines the CheckStyle task                                          -->
+  <!-- ==================================================================== -->
+  <taskdef resource="checkstyletask.properties"
+           classpath="checkstyle-all-3.3.jar"/>
+
+  <!-- ==================================================================== -->
+  <!-- Checks style of all source files                                     -->
+  <!-- ==================================================================== -->
+  <target name="checkstyle" 
+          description="Generates a report of code convention violations.">
+
+    <mkdir dir="${checkstyle.dir}"/>
+    <checkstyle config="docs/sun_checks.xml"
+                failureProperty="checkstyle.failure"
+                failOnViolation="false">
+      <formatter type="xml" tofile="${checkstyle.dir}/checkstyle_report.xml"/>
+      <fileset dir="${src.dir}" includes="**/*.java"/>
+    </checkstyle>
+
+    <style in="${checkstyle.dir}/checkstyle_report.xml" 
+    	out="${checkstyle.dir}/checkstyle_report.html" 
+    	style="${docs.dir}/checkstyle-frames.xsl"/>
+ 
+  </target>
+
+<!-- ==================================================================== -->
+<!-- Checks dependencies of all source files                              -->
+<!-- ==================================================================== -->
+  <target name="jdepend" depends="compile" description="Generates a report of dependencies.">
+		<mkdir dir="${jdepend.report.dir}"/>
+        <jdepend outputfile="${jdepend.report.dir}/jdepend.xml" format="xml">
+            <sourcespath>
+                <pathelement location="${build.web.dir}"/>
+             </sourcespath>
+			<classpath refid="master-classpath"/>
+        </jdepend>
+
+        <style in="${jdepend.report.dir}/jdepend.xml"
+            out="${jdepend.report.dir}/index.html"
+            style="${docs.dir}/jdepend.xsl"/>
+            
+    </target>
+
+<!-- ==================================================================== -->
+<!-- Generate all reports                                                 -->
+<!-- ==================================================================== -->
+  <target name="reports" depends="checkstyle, javadoc, checkdoc, jdepend, coverage, generate-testreport" description="Generates all reports.">
+    <echo>
+		all reports have been generated.
+		The JAVADOC is in ${javadocs.dir}/index.html
+		The Unit Test report is ${reports.dir}/unittest/index.html
+		The coverage HTML report is ${reports.dir}/coverage/index.html
+    </echo>
+  </target>
+            
+<!-- ============================================================== -->
+<!-- Tomcat tasks - remove these if you don't have Tomcat installed -->
+<!-- ============================================================== -->
+    <taskdef name="install" classname="org.apache.catalina.ant.InstallTask">
+        <classpath>
+            <path location="${tomcat.home}/server/lib/catalina-ant.jar"/>
+        </classpath>
+    </taskdef>
+    <taskdef name="reload" classname="org.apache.catalina.ant.ReloadTask">
+        <classpath>
+            <path location="${tomcat.home}/server/lib/catalina-ant.jar"/>
+        </classpath>
+    </taskdef>
+    <taskdef name="list" classname="org.apache.catalina.ant.ListTask">
+        <classpath>
+            <path location="${tomcat.home}/server/lib/catalina-ant.jar"/>
+        </classpath>
+    </taskdef>
+    <taskdef name="start" classname="org.apache.catalina.ant.StartTask">
+        <classpath>
+            <path location="${tomcat.home}/server/lib/catalina-ant.jar"/>
+        </classpath>
+    </taskdef>
+    <taskdef name="stop" classname="org.apache.catalina.ant.StopTask">
+        <classpath>
+            <path location="${tomcat.home}/server/lib/catalina-ant.jar"/>
+        </classpath>
+    </taskdef>
+
+    <target name="install" description="Install application in Tomcat">
+        <install url="${tomcat.manager.url}"
+                 username="${tomcat.manager.username}"
+                 password="${tomcat.manager.password}"
+                 path="/${name}"
+                 war="${name}"/>
+    </target>
+
+    <target name="reload" description="Reload application in Tomcat">
+        <reload url="${tomcat.manager.url}"
+                 username="${tomcat.manager.username}"
+                 password="${tomcat.manager.password}"
+                 path="/${name}"/>
+    </target>
+
+    <target name="start" description="Start Tomcat application">
+        <start url="${tomcat.manager.url}"
+                 username="${tomcat.manager.username}"
+                 password="${tomcat.manager.password}"
+                 path="/${name}"/>
+    </target>
+
+    <target name="stop" description="Stop Tomcat application">
+        <stop url="${tomcat.manager.url}"
+                 username="${tomcat.manager.username}"
+                 password="${tomcat.manager.password}"
+                 path="/${name}"/>
+    </target>
+
+    <target name="list" description="List Tomcat applications">
+        <list url="${tomcat.manager.url}"
+                 username="${tomcat.manager.username}"
+                 password="${tomcat.manager.password}"/>
+    </target>
+
+<!-- End Tomcat tasks -->
+
+</project>
